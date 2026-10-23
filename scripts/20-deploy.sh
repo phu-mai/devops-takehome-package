@@ -6,8 +6,8 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 # shellcheck source=/dev/null
 source "${ROOT}/scripts/lib.sh"
 
-# Fix Git dubious ownership error in containerized environments
-git config --global --add safe.directory "${ROOT}" || true
+# Fix Git dubious ownership error globally for containerized environments
+git config --global --add safe.directory '*' || true
 
 SHA="$(git_sha)"
 FULL_IMAGE="${IMAGE_NAME}:${SHA}"
