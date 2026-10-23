@@ -15,18 +15,26 @@ helm repo add prometheus-community https://prometheus-community.github.io/helm-c
 helm repo update prometheus-community >/dev/null
 kubectl create namespace "${MON_NS}" --dry-run=client -o yaml | kubectl apply -f -
 
+# Slim install for low-RAM Docker Desktop (~4–8GB): drop node exporters / kube-state extras where possible
 helm upgrade --install kps prometheus-community/kube-prometheus-stack \
   --namespace "${MON_NS}" \
   --set grafana.adminPassword=admin \
+  --set grafana.persistence.enabled=false \
   --set prometheus.prometheusSpec.serviceMonitorSelectorNilUsesHelmValues=false \
   --set prometheus.prometheusSpec.podMonitorSelectorNilUsesHelmValues=false \
   --set prometheus.prometheusSpec.ruleSelectorNilUsesHelmValues=false \
+  --set prometheus.prometheusSpec.retention=2h \
+  --set prometheus.prometheusSpec.resources.requests.memory=256Mi \
+  --set prometheus.prometheusSpec.resources.limits.memory=512Mi \
   --set alertmanager.enabled=false \
   --set kubeEtcd.enabled=false \
   --set kubeControllerManager.enabled=false \
   --set kubeScheduler.enabled=false \
   --set kubeProxy.enabled=false \
-  --set defaultRules.create=true \
+  --set nodeExporter.enabled=false \
+  --set prometheus-node-exporter.enabled=false \
+  --set kubeStateMetrics.enabled=true \
+  --set defaultRules.create=false \
   --wait --timeout 15m
 
 log "Applying ServiceMonitor + PrometheusRule for quote-api..."

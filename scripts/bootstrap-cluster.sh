@@ -13,6 +13,9 @@ if k3d cluster list --no-headers 2>/dev/null | awk '{print $1}' | grep -qx "${CL
   echo "[bootstrap] Cluster '${CLUSTER_NAME}' already exists — reusing"
 else
   echo "[bootstrap] Creating k3d cluster '${CLUSTER_NAME}' (1 server + 4 agents)..."
+  # Note: --servers-memory/--agents-memory break when k3d runs inside a
+  # container against the host Docker socket (fake /proc/meminfo bind-mount).
+  # Rely on Docker Desktop RAM instead; keep Traefik + metrics-server defaults.
   k3d cluster create "${CLUSTER_NAME}" \
     --servers 1 \
     --agents 4 \

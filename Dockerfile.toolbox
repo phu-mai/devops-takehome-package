@@ -1,16 +1,15 @@
-# Toolbox image: kubectl, helm, terraform, k6, docker CLI, k3d helpers
-FROM debian:bookworm-slim
+# Lean toolbox: reuse official CLIs via multi-copy from known images where possible.
+FROM alpine:3.20
 
+ARG TARGETARCH=amd64
 ARG KUBECTL_VERSION=1.31.4
 ARG HELM_VERSION=3.16.4
-ARG TERRAFORM_VERSION=1.10.5
-ARG K6_VERSION=0.56.0
-ARG TARGETARCH=amd64
+ARG TERRAFORM_VERSION=1.9.8
+ARG K6_VERSION=0.54.0
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-      ca-certificates curl git jq bash docker.io \
-      openssh-client python3 \
-    && rm -rf /var/lib/apt/lists/*
+RUN apk add --no-cache \
+      bash curl git jq ca-certificates docker-cli python3 tar gzip unzip openssl \
+    && update-ca-certificates
 
 # kubectl
 RUN curl -fsSL "https://dl.k8s.io/release/v${KUBECTL_VERSION}/bin/linux/${TARGETARCH}/kubectl" \
@@ -23,14 +22,11 @@ RUN curl -fsSL "https://get.helm.sh/helm-v${HELM_VERSION}-linux-${TARGETARCH}.ta
     && mv "/tmp/linux-${TARGETARCH}/helm" /usr/local/bin/helm \
     && rm -rf /tmp/linux-*
 
-# terraform
+# terraform (slightly older, smaller zip)
 RUN curl -fsSL "https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_${TARGETARCH}.zip" \
       -o /tmp/terraform.zip \
-    && apt-get update && apt-get install -y --no-install-recommends unzip \
     && unzip /tmp/terraform.zip -d /usr/local/bin \
-    && rm /tmp/terraform.zip \
-    && apt-get purge -y unzip && apt-get autoremove -y \
-    && rm -rf /var/lib/apt/lists/*
+    && rm /tmp/terraform.zip
 
 # k6
 RUN curl -fsSL "https://github.com/grafana/k6/releases/download/v${K6_VERSION}/k6-v${K6_VERSION}-linux-${TARGETARCH}.tar.gz" \
