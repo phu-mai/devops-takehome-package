@@ -85,7 +85,7 @@ Verifier: `./troubleshoot/verify.sh` → `PASS`.
 | **Symptom** | Deployments Ready but smoke Job fails/times out (verify step 7) |
 | **Commands** | `kubectl logs job/smoke-test -n troubleshoot`; `kubectl get networkpolicy -n troubleshoot` |
 | **Root cause** | `default-deny` blocks Ingress+Egress: DNS to CoreDNS and HTTP from smoke-client → web |
-| **Fix** | Keep `default-deny`. Add least-privilege policies: DNS egress to `kube-system` (UDP/TCP 53), and ingress on `app=web` from `app=smoke-client` on TCP 80. Deleting default-deny is not accepted. |
+| **Fix** | Keep `default-deny`. Add least-privilege policies: DNS egress to `kube-system` (UDP/TCP 53), ingress on `app=web` from `app=smoke-client` on TCP 80, **and** egress from `app=smoke-client` to `app=web` on TCP 80 (default-deny blocks client egress too). Deleting default-deny is not accepted. |
 
 ---
 

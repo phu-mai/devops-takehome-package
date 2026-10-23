@@ -47,7 +47,7 @@ spec:
         - protocol: TCP
           port: 53
 ---
-# Allow smoke-client → web:80
+# Allow smoke-client → web:80 (ingress on web)
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -64,6 +64,27 @@ spec:
         - podSelector:
             matchLabels:
               app: smoke-client
+      ports:
+        - protocol: TCP
+          port: 80
+---
+# Allow smoke-client egress to web:80 (default-deny blocks client egress too)
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-smoke-egress-to-web
+  namespace: troubleshoot
+spec:
+  podSelector:
+    matchLabels:
+      app: smoke-client
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - podSelector:
+            matchLabels:
+              app: web
       ports:
         - protocol: TCP
           port: 80

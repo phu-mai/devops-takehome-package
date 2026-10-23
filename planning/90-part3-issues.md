@@ -87,7 +87,7 @@ Verifier: [`troubleshoot/verify.sh`](../troubleshoot/verify.sh). Smoke: [`troubl
 | **Symptom** | Deployments Ready but smoke Job Failed / timeout; verify step 7 |
 | **Diagnose** | Job logs; confirm NP `default-deny` selects all pods Ingress+Egress |
 | **Root cause** | Default-deny blocks client→Service HTTP and likely DNS (kube-dns) egress |
-| **Fix** | Keep default-deny; add least-privilege NetworkPolicies: DNS egress (kube-system DNS), client→web ingress on 80, web egress as needed (or empty egress if none). Deleting default-deny is **not** accepted |
+| **Fix** | Keep default-deny; add least-privilege NetworkPolicies: DNS egress (kube-system DNS), client→web **ingress** on 80, **and** smoke-client→web **egress** on 80 (default-deny blocks both directions). Deleting default-deny is **not** accepted |
 
 ---
 
