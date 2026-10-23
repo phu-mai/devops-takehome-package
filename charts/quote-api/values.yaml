@@ -1,0 +1,87 @@
+replicaCount: 3
+
+image:
+  repository: quote-api
+  tag: "devlocal"
+  pullPolicy: IfNotPresent
+
+nameOverride: ""
+fullnameOverride: "quote-api"
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 8000
+
+ingress:
+  enabled: true
+  className: traefik
+  hosts:
+    - host: ""
+      paths:
+        - path: /
+          pathType: Prefix
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 256Mi
+
+probes:
+  liveness:
+    path: /healthz
+    initialDelaySeconds: 5
+    periodSeconds: 10
+  readiness:
+    path: /readyz
+    initialDelaySeconds: 3
+    periodSeconds: 5
+
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 10001
+  runAsGroup: 10001
+  readOnlyRootFilesystem: true
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
+
+podSecurityContext:
+  fsGroup: 10001
+  seccompProfile:
+    type: RuntimeDefault
+
+hpa:
+  enabled: true
+  minReplicas: 3
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 50
+
+pdb:
+  enabled: true
+  minAvailable: 1
+
+# Placement: prefer spot, require capacity label (spot|on-demand), soft hostname spread,
+# hard capacity spread so ≥1 replica stays on on-demand when 3 pods are scheduled.
+placement:
+  requiredCapacityIn:
+    - spot
+    - on-demand
+  preferSpotWeight: 100
+  capacitySpread:
+    maxSkew: 1
+    minDomains: 2
+    whenUnsatisfiable: DoNotSchedule
+  hostnameSpread:
+    maxSkew: 1
+    whenUnsatisfiable: ScheduleAnyway
+
+# Disabled by default — CRD arrives with kube-prometheus-stack in scripts/60-loadtest.sh
+serviceMonitor:
+  enabled: false
+  interval: 15s
+  path: /metrics

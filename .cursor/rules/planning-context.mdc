@@ -1,0 +1,26 @@
+---
+description: Require planning/ as primary project context for every task
+alwaysApply: true
+---
+
+# Planning folder is authoritative
+
+Before any implementation, diagnosis, refactor, review, test, or doc work:
+
+1. Read `planning/README.md`, then `planning/INDEX.md`.
+2. Load only the domain docs needed (architecture, implementation, operations, verification, decisions, source-map, Part 3 issues, context, requirements).
+3. Prefer `planning/` over memory. Original brief: `ASSIGNMENT - DevOps.md`.
+
+If code or docs conflict with `planning/`, stop and reconcile — update planning or code; never silently diverge. After material changes, update INDEX + relevant planning files in the same session.
+
+## Hard constraints
+
+- No secrets in git.
+- Do not strip `troubleshoot/prepare.sh` labels/taints or the default-deny NetworkPolicy.
+- Golden Rule must hold: `docker compose up -d` then `./scripts/run-all.sh`.
+
+## Locked scope
+
+Python quote API; k3d (≥4 agents) + toolbox; CORE + Parts 4–6 + Part 7; Semgrep hard-fail for Part 4.
+
+Full contract: `AGENTS.md` and `planning/`.

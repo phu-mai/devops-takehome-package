@@ -1,0 +1,32 @@
+# Reference Application manifest. scripts/20-deploy.sh applies a live version
+# pointed at the in-cluster git daemon (local Golden Rule) or your public repo.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: quote-api
+  namespace: argocd
+spec:
+  project: default
+  source:
+    # Replace with your public GitHub URL after publish:
+    # repoURL: https://github.com/<owner>/<repo>.git
+    repoURL: git://git-daemon.git-server.svc.cluster.local/quote-api.git
+    targetRevision: HEAD
+    path: charts/quote-api
+    helm:
+      parameters:
+        - name: image.repository
+          value: quote-api
+        - name: image.tag
+          value: "REPLACE_WITH_GIT_SHA"
+        - name: image.pullPolicy
+          value: IfNotPresent
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: quote-api
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

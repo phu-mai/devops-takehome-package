@@ -1,0 +1,40 @@
+# Local harness: k3d cluster (≥4 agents) + toolbox with kubectl/helm/terraform/k6.
+# Golden Rule:
+#   docker compose up -d
+#   docker compose exec toolbox ./scripts/run-all.sh
+#
+# Host Ingress: http://localhost:8080/api/quote
+services:
+  toolbox:
+    build:
+      context: .
+      dockerfile: Dockerfile.toolbox
+    image: devops-takehome-toolbox:local
+    container_name: devops-toolbox
+    privileged: true
+    working_dir: /workspace
+    environment:
+      KUBECONFIG: /kubeconfig/kubeconfig.yaml
+      CLUSTER_NAME: devops-takehome
+      INGRESS_HOST_PORT: "8080"
+      # From toolbox container (Docker Desktop): reach published Ingress via host gateway
+      QUOTE_URL: http://host.docker.internal:8080/api/quote
+      QUOTE_URL_HOST: http://localhost:8080/api/quote
+    volumes:
+      - .:/workspace
+      - /var/run/docker.sock:/var/run/docker.sock
+      - k3d-kubeconfig:/kubeconfig
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    # Bootstrap cluster then sleep; run-all is exec'd by reviewer
+    entrypoint: ["/bin/bash", "-c"]
+    command:
+      - |
+        set -euo pipefail
+        /workspace/scripts/bootstrap-cluster.sh
+        echo "Cluster ready. Run: docker compose exec toolbox ./scripts/run-all.sh"
+        exec sleep infinity
+    restart: unless-stopped
+
+volumes:
+  k3d-kubeconfig:

@@ -1,0 +1,29 @@
+# Karpenter EC2NodeClass for GPU inference nodes (validate-only / design artifact).
+# API verified against https://karpenter.sh/docs/concepts/nodeclasses/ (karpenter.k8s.aws/v1).
+apiVersion: karpenter.k8s.aws/v1
+kind: EC2NodeClass
+metadata:
+  name: gpu-inference
+spec:
+  amiFamily: AL2023
+  role: KarpenterNodeRole-eks-demo
+  subnetSelectorTerms:
+    - tags:
+        karpenter.sh/discovery: eks-demo
+  securityGroupSelectorTerms:
+    - tags:
+        karpenter.sh/discovery: eks-demo
+  tags:
+    Name: karpenter-gpu-inference
+    Workload: gpu-inference
+  blockDeviceMappings:
+    - deviceName: /dev/xvda
+      ebs:
+        volumeSize: 100Gi
+        volumeType: gp3
+        encrypted: true
+  metadataOptions:
+    httpEndpoint: enabled
+    httpProtocolIPv6: disabled
+    httpPutResponseHopLimit: 2
+    httpTokens: required

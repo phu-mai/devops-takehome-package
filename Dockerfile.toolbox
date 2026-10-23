@@ -1,0 +1,48 @@
+# Toolbox image: kubectl, helm, terraform, k6, docker CLI, k3d helpers
+FROM debian:bookworm-slim
+
+ARG KUBECTL_VERSION=1.31.4
+ARG HELM_VERSION=3.16.4
+ARG TERRAFORM_VERSION=1.10.5
+ARG K6_VERSION=0.56.0
+ARG TARGETARCH=amd64
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      ca-certificates curl git jq bash docker.io \
+      openssh-client python3 \
+    && rm -rf /var/lib/apt/lists/*
+
+# kubectl
+RUN curl -fsSL "https://dl.k8s.io/release/v${KUBECTL_VERSION}/bin/linux/${TARGETARCH}/kubectl" \
+      -o /usr/local/bin/kubectl \
+    && chmod +x /usr/local/bin/kubectl
+
+# helm
+RUN curl -fsSL "https://get.helm.sh/helm-v${HELM_VERSION}-linux-${TARGETARCH}.tar.gz" \
+      | tar -xz -C /tmp \
+    && mv "/tmp/linux-${TARGETARCH}/helm" /usr/local/bin/helm \
+    && rm -rf /tmp/linux-*
+
+# terraform
+RUN curl -fsSL "https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_${TARGETARCH}.zip" \
+      -o /tmp/terraform.zip \
+    && apt-get update && apt-get install -y --no-install-recommends unzip \
+    && unzip /tmp/terraform.zip -d /usr/local/bin \
+    && rm /tmp/terraform.zip \
+    && apt-get purge -y unzip && apt-get autoremove -y \
+    && rm -rf /var/lib/apt/lists/*
+
+# k6
+RUN curl -fsSL "https://github.com/grafana/k6/releases/download/v${K6_VERSION}/k6-v${K6_VERSION}-linux-${TARGETARCH}.tar.gz" \
+      | tar -xz -C /tmp \
+    && mv "/tmp/k6-v${K6_VERSION}-linux-${TARGETARCH}/k6" /usr/local/bin/k6 \
+    && rm -rf /tmp/k6-*
+
+# k3d
+RUN curl -fsSL https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash
+
+WORKDIR /workspace
+ENV KUBECONFIG=/kubeconfig/kubeconfig.yaml
+ENV PATH="/usr/local/bin:${PATH}"
+
+CMD ["sleep", "infinity"]

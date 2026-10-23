@@ -1,0 +1,39 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: quote-api
+  namespace: monitoring
+  labels:
+    release: kps
+    app: kube-prometheus-stack
+spec:
+  groups:
+    - name: quote-api
+      rules:
+        # Each /api/quote burns ~100ms CPU. Under the k6 stages (up to ~30 VUs),
+        # sustained request rates that push CPU past HPA targets correlate with
+        # p95 approaching 500ms — the same threshold used in loadtest/k6-quote.js.
+        - alert: QuoteApiHighRequestRate
+          expr: sum(rate(http_requests_total{endpoint="/api/quote"}[2m])) > 20
+          for: 2m
+          labels:
+            severity: warning
+          annotations:
+            summary: "quote-api request rate high (>20 rps)"
+            description: >
+              Threshold from local load observations (LOADTEST.md): beyond ~15–25 RPS
+              on a small k3d agent the app CPU saturates and HPA scales past 3.
+              Page when sustained >20 rps for 2m so on-call can confirm scale-out.
+        - alert: QuoteApiHighErrorRate
+          expr: |
+            (
+              sum(rate(http_requests_total{endpoint="/api/quote",status!~"2.."}[5m]))
+              /
+              clamp_min(sum(rate(http_requests_total{endpoint="/api/quote"}[5m])), 0.001)
+            ) > 0.05
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "quote-api error rate >5%"
+            description: "Matches k6 threshold http_req_failed rate<0.05."
