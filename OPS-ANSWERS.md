@@ -8,22 +8,32 @@
 
 ## 2) Spot reclaim alert storms (`KubeNodeUnreachable`)
 
-Treat spot interruption as **expected**. Alert on **symptom classes**, not every NotReady:
-
-- Suppress or route `KubeNodeUnreachable`/`NodeNotReady` for nodes with spot labels / interruption taints to a low-urgency channel; require **multi-node** or **zone** failure for page.
-- Page on **customer impact**: elevated error rate, SLO burn, Pending pods with `Insufficient` for on-demand capacity, or FailedSchedules for non-spot-tolerant critical Deployments.
-- Keep a **real** node-failure signal: NotReady on **on-demand** / system nodegroups, or NotReady lasting beyond reclaim window **without** corresponding ASG/Karpenter replacement.
+### Alerting Strategy
+* **Lifecycle-Aware Labeling & Filtering:** Tag Spot worker nodes with a dedicated label (`lifecycle: spot`). Configure Prometheus alerting rules to either exclude `lifecycle: spot` nodes from immediate unreachability alerts or apply distinct thresholds.
+* **Time-Based Hysteresis (`for` duration):** Increase the evaluation delay (`for: 5m` or `10m`) for single-node unreachability, while maintaining rapid alerting (`for: 0m`) only when multiple nodes across distinct AZs fail simultaneously (indicating a broader zone outage).
 
 ## 3) Cloudflare LCP 5s — HTML caching diagnosis
 
-1. **Headers from edge:** `curl -sI https://site/` — check `cf-cache-status` (DYNAMIC/MISS/EXPIRED vs HIT), `cache-control`, `age`, `content-type`.
-2. **Rules:** Confirm Cache Rules / Page Rules don’t bypass HTML; marketing HTML often set to bypass or respect origin `Cache-Control: no-store`.
-3. **Origin:** Origin may send `no-cache`/`private` or `Set-Cookie` on HTML → Cloudflare won’t cache. Compare origin vs edge TTLs.
-4. **HTML vs assets:** Assets may HIT while HTML is DYNAMIC—LCP element (hero image/font) might still be uncached or too large; check LCP resource waterfall.
-5. **Fix direction:** Cache HTML with short edge TTL + stale-while-revalidate if content allows; strip unnecessary cookies on cacheable paths; optimize LCP asset; avoid Cloudflare “cache everything” without understanding Set-Cookie.
+11. **Inspect Response Headers (`CF-Cache-Status`):** Use `curl -I https://example.com` or browser dev tools to inspect the response headers. If `CF-Cache-Status` returns `DYNAMIC`, `BYPASS`, or is missing entirely, Cloudflare is serving the HTML straight from the origin.
+2. **Examine Origin Cache-Control & Cookies:** Check if the origin server sends `Cache-Control: private, no-store` or emits a `Set-Cookie` header. By default, Cloudflare automatically bypasses cache if `Set-Cookie` is present to prevent leaking user sessions.
+3. **Verify Cloudflare Cache Rules:** Confirm whether a Cache Rule or Page Rule exists for the root path and `.html` extensions. By default, Cloudflare does **not** cache static HTML extensions without explicit configuration.
+4. **Implement Fixes:**
+   * Create a Cache Rule matching the marketing paths with **Cache Everything** enabled.
+   * Set an Edge Cache TTL (e.g., 4 hours) and enable **Respect Origin Headers: No** (or configure cache key settings to ignore query strings and cookies for anonymous page views).
+   * Ensure origin drops unnecessary `Set-Cookie` headers for unauthenticated visitors. 
+   * *Result:* Origin TTFB drops from ~2–3s to <50ms (edge delivery), immediately collapsing LCP below 2.5s.
 
-## 4) Secrets on EKS (multi-cluster startup)
+## 4) Application Secrets on EKS: Comparison & Selection
 
-**Compare:** (A) **Sealed Secrets / SOPS in Git** — encrypt in repo, decrypt in-cluster; simple, GitOps-friendly, key distribution and rotation are the hard parts. (B) **External Secrets Operator + cloud secret manager (AWS Secrets Manager / SSM)** — source of truth outside git; central rotation/IAM; needs IRSA per cluster and network to AWS APIs.
+### Approach A: Native Kubernetes Secrets + External Secrets Operator (ESO)
+* **Mechanism:** Secrets are stored securely in a dedicated external vault (AWS Secrets Manager or SSM Parameter Store). The External Secrets Operator syncs them into native Kubernetes `Secret` objects inside the cluster.
+* **Pros:** Native Kubernetes developer experience (`kubectl get secrets`, standard envVar or volume-mount injection); leverages robust AWS IAM, native audit logging, and automated rotation out-of-the-box.
+* **Cons:** Secrets exist as standard base64-encoded Kubernetes secrets at rest in etcd (unless etcd encryption at rest is explicitly enabled).
 
-**Pick for multi-cluster startup:** **External Secrets + Secrets Manager** with IRSA. One secret inventory across clusters, IAM-scoped access, no sealed-key sprawl per cluster, and GitOps only stores `ExternalSecret` references—not ciphertext that is painful to rotate when a controller key is compromised.
+### Approach B: HashiCorp Vault + Vault Agent Injector
+* **Mechanism:** Vault manages all secrets. An admission webhook injects a sidecar container into pods to fetch and render secrets into shared memory volumes.
+* **Pros:** Highly granular dynamic secrets (e.g., auto-expiring database credentials), advanced multi-cloud secret management, and fine-grained ACLs.
+* **Cons:** High operational complexity. Running, scaling, backing up, and maintaining a highly available Vault cluster across multiple production EKS clusters introduces significant operational overhead for a startup.
+
+### Selected Approach for a Startup
+**Approach A (Kubernetes Secrets + External Secrets Operator backed by AWS Secrets Manager)** is the optimal choice. Startups require maximum engineering velocity and minimal operational toil. ESO provides a secure, zero-infrastructure-overhead bridge between AWS-managed secret storage and native Kubernetes workloads across multiple clusters without requiring an on-cluster stateful secret management cluster.

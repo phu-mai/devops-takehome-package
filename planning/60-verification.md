@@ -12,6 +12,7 @@ Proof checklist for submission. Update evidence paths when artifacts land.
   ```
 
 - [ ] No manual kubectl/helm steps required for CORE path.
+- [x] Authoring-machine evidence (ordered scripts + screenshots; Part 6 blocked by host CPU): [`docs/verification/index.html`](../docs/verification/index.html).
 
 ## Part 1
 
@@ -54,12 +55,13 @@ Proof checklist for submission. Update evidence paths when artifacts land.
 
 ## Part 6
 
-- [ ] Prometheus scrapes app `/metrics`; Grafana reachable as documented.
-- [ ] k6 thresholds justified from baseline in `LOADTEST.md`.
-- [ ] Evidence of HPA scaling >3 and placement still respected.
-- [ ] PrometheusRule committed; threshold justified.
-- [ ] Dashboard JSON + screenshot taken **during** load.
-- [ ] `LOADTEST.md`: RPS, bottleneck, scale-first recommendation.
+- [x] Stack committed: `scripts/60-loadtest.sh`, ServiceMonitor, PrometheusRule, Grafana dashboard JSON, k6 script, `LOADTEST.md`.
+- [ ] Prometheus scrapes app `/metrics`; Grafana reachable as documented — **blocked locally** (Helm `kps` hit `context deadline exceeded` under Docker **404%/400%** CPU; see [`docs/verification/index.html`](../docs/verification/index.html)).
+- [x] k6 thresholds justified from baseline in `LOADTEST.md` (design values; live run pending adequate host).
+- [ ] Evidence of HPA scaling >3 and placement still respected — blocked locally (same resource limit).
+- [x] PrometheusRule committed; threshold justified.
+- [ ] Dashboard JSON + screenshot taken **during** load — JSON committed; live Grafana screenshot blocked; verification report embeds helm-timeout + host-CPU evidence instead.
+- [x] `LOADTEST.md`: RPS, bottleneck, scale-first recommendation.
 
 ## Part 7
 

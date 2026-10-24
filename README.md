@@ -114,6 +114,7 @@ See [`TROUBLESHOOTING.md`](TROUBLESHOOTING.md). Do not delete default-deny or re
 
 ## Other docs
 
+- [`docs/verification/index.html`](docs/verification/index.html) — verification report (ordered scripts + evidence screenshots; Part 6 blocked note)  
 - [`AI-USAGE.md`](AI-USAGE.md) — AI disclosure  
 - [`MIGRATION-NOTES.md`](MIGRATION-NOTES.md) — GitLab → GHA  
 - [`LOADTEST.md`](LOADTEST.md) — k6 / HPA / bottleneck  
