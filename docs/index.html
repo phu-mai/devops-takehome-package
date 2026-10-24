@@ -534,6 +534,7 @@
         <a href="#case-50">50</a>
         <a href="#case-60" class="amber">60</a>
         <a href="#part6">Part 6</a>
+        <a href="#registry">Registry</a>
         <a href="#gallery">Gallery</a>
         <a href="#obs">Obs platform</a>
       </nav>
@@ -763,6 +764,40 @@
             <a href="../../.github/workflows/ci.yml"><code>.github/workflows/ci.yml</code></a>.
             No local screenshot for this track; see <a href="../../MIGRATION-NOTES.md">MIGRATION-NOTES.md</a>.
           </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Container Registry & Artifact Delivery Section -->
+    <section id="registry">
+      <div class="section-head">
+        <h2>Container Registry &amp; Artifact Delivery</h2>
+        <p>GHCR Integration &amp; Image Lifecycle</p>
+      </div>
+      <div class="card">
+        <div class="meta" style="margin-bottom: 12px;">
+          <span class="badge ci">GitHub Packages (GHCR)</span>
+          <span class="badge pass"><span class="dot"></span>Automated Delivery</span>
+        </div>
+        <h3 style="margin: 0 0 8px; font-size: 1.2rem;">
+          <a href="https://github.com/phu-mai/devops-takehome-package/pkgs/container/devops-takehome-package%2Fquote-api" target="_blank" rel="noopener noreferrer">
+            ghcr.io/phu-mai/devops-takehome-package/quote-api ↗
+          </a>
+        </h3>
+        <p style="color: var(--muted); margin: 0 0 16px;">
+          Centralized OCI container artifact repository hosting production-ready <code>quote-api</code> builds generated directly from the automated CI pipeline.
+        </p>
+
+        <ul class="bullets" style="margin-bottom: 20px;">
+          <li><strong>GHCR Integration:</strong> Hosted on GitHub Packages Container Registry for secure, authenticated, or public deployment pulls.</li>
+          <li><strong>Image Tagging Policy:</strong> Immutable Git commit SHA tags for traceable deployments, SemVer version tags for releases, and <code>latest</code> for rapid development.</li>
+          <li><strong>Security Scanning:</strong> Pre-push static code analysis via <strong>Semgrep</strong> and vulnerability scanning prior to GHCR publishing.</li>
+          <li><strong>Multi-stage Non-root Build:</strong> Standardized Dockerfile leveraging multi-stage builds and unprivileged non-root execution (`UID 10001`).</li>
+        </ul>
+
+        <div style="background: #0e1626; border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px;">
+          <span style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); display: block; margin-bottom: 6px;">Pull Package</span>
+          <pre style="margin: 0; font-family: var(--mono); font-size: 0.88rem; color: var(--pass); overflow-x: auto;">docker pull ghcr.io/phu-mai/devops-takehome-package/quote-api:latest</pre>
         </div>
       </div>
     </section>
@@ -1005,7 +1040,7 @@ Error: context deadline exceeded</pre>
     <!-- Obs platform & Architecture Map -->
     <section id="obs">
       <div class="section-head">
-        <h2>Obs-Platform Architecture Proposal</h2>
+        <h2>Obs-Platform Architecture Map</h2>
         <p>Design principles, architecture map, data flow, and component responsibilities</p>
       </div>
 
@@ -1152,7 +1187,7 @@ Error: context deadline exceeded</pre>
     <!-- UPLIFT Section -->
     <section id="uplift">
       <div class="section-head">
-        <h2>OPS-ANSWERS</h2>
+        <h2>UPLIFT — OBS-PLATFORM</h2>
         <p>Operational Q&amp;A &amp; mitigation strategies</p>
       </div>
       <div class="card">
