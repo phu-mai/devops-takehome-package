@@ -64,7 +64,9 @@ Catalog of planning docs and repo artifacts. Status: `exists` = present in repo;
 | `infra/cloudflare/` (Terraform) | DNS, cache rule, `import` block | exists |
 | `scripts/50-validate-tf.sh` | `fmt` / `init` / `validate` | exists |
 | `scripts/60-loadtest.sh` | Prometheus/Grafana + k6 + HPA proof | exists |
-| k6 script + Grafana dashboard JSON + screenshot | Part 6 evidence | exists (screenshot after local load) |
+| k6 script + Grafana dashboard JSON + screenshot | Part 6 evidence | exists (local k6/HPA blocked by host CPU; see verification report) |
 | PrometheusRule (app alert) | Meaningful alert | exists |
 | `LOADTEST.md` | RPS / bottleneck / scale-first | exists |
 | `OPS-ANSWERS.md` | Part 7 written answers | exists |
+| [`docs/verification/index.html`](../docs/verification/index.html) | HTML verification report + 9 evidence screenshots | exists |
+| `docs/verification/evidence/*.png` | Terminal / Docker proof per numbered script | exists |

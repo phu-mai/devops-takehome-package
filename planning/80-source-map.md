@@ -42,6 +42,8 @@ Pointers from concern → path. Prefer updating this when paths change.
 | Load test / dashboards | `loadtest/`, `scripts/60-loadtest.sh` |
 | Load test write-up | `LOADTEST.md` |
 | Ops answers | `OPS-ANSWERS.md` |
+| Verification HTML report | `docs/verification/index.html` |
+| Verification evidence screenshots | `docs/verification/evidence/` |
 | Submission README | `README.md` (root) |
 | AI disclosure | `AI-USAGE.md` |
 

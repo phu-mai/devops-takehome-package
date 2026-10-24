@@ -1,12 +1,16 @@
 # Load test notes (Part 6)
 
+## Local run status
+
+Stack and scripts are committed. On the authoring host, `scripts/60-loadtest.sh` could not finish installing slim `kube-prometheus-stack` (`Error: context deadline exceeded`) while Docker Desktop already showed **404% / 400%** container CPU on the k3d agents. k6 / HPA / Grafana-under-load were therefore not executed locally. Proof of the block and of earlier Golden Rule passes: [`docs/verification/index.html`](docs/verification/index.html).
+
 ## Setup
 
 - Prometheus + Grafana via `kube-prometheus-stack` (`scripts/60-loadtest.sh`)
 - k6 hits Ingress: `http://host.docker.internal:8080/api/quote` (host: `localhost:8080`)
-- Evidence: `loadtest/evidence/` (k6 summary, HPA watch, pod placements)
+- Evidence: `loadtest/evidence/` (k6 summary, HPA watch, pod placements) — produced when the host has headroom
 - Dashboard JSON: `loadtest/grafana-dashboard.json`
-- Screenshot during load: `loadtest/screenshot.png` (captured when Grafana is up under load)
+- Screenshot during load: `loadtest/screenshot.png` (captured when Grafana is up under load; pending adequate host)
 
 ## Measured baseline (local k3d)
 
